@@ -1,5 +1,5 @@
 # Last.fm remove scrobbles from user library where play_count = 1
-This script perform a lookup at the external sso database to find users that are linked w/ the auth.redhat.com (internal sso)
+For now this script creates a URL for removal of every existing artist in your last.fm with 1 play_count for cleanup purposes.
 
 ## 1 Installation (chrome configuration)
 
