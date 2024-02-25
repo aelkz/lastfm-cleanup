@@ -3,13 +3,39 @@ import time
 import pylast
 from typing import Optional
 from getpass import getpass
-from config import APP_CONFIG
+from config import APP_CONFIG, CustomLoggingFormatter
 from pylast_ext import PyLastExt
+
+# logging configuration
+logger = logging.getLogger("app")
+logger.setLevel(level=logging.INFO)
+
+simple_logger = logging.getLogger("app_simple")
+simple_logger.setLevel(level=logging.INFO)
+
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+ch.setFormatter(CustomLoggingFormatter(pattern="%(asctime)s - %(name)s - %(levelname)s - %(message)s (%(filename)s:%(lineno)d)"))
+
+simple_ch = logging.StreamHandler()
+simple_ch.setLevel(logging.INFO)
+simple_ch.setFormatter(CustomLoggingFormatter(pattern="%(message)s"))
+
+logger.addHandler(ch)
+simple_logger.addHandler(simple_ch)
+
+
+def validate(k: str, v: int, higher: int, lower: int = 1):
+    if type(v) != int:
+        logger.error(f'{k} value must be a valid number')
+        exit(1)
+
+    if v < lower or v > higher:
+        logger.error(f'{k} value must be a valid number between {lower} and {higher}')
+        exit(1)
 
 
 def main():
-    logging.basicConfig(level=logging.INFO)
-
     # load configs
     lastfm_config = APP_CONFIG['lastfm']
     config = lastfm_config['config']['api']
@@ -17,6 +43,7 @@ def main():
     config_keys = list(config.keys())
     keys: list = ['key', 'secret', 'username', 'password']
 
+    # initialize config keys
     idx: int = 0
     for k in keys:
         if k not in config_keys:
@@ -25,27 +52,17 @@ def main():
         idx += 1
 
     for k in config.keys():
-        # Environment variables overwrite values
-        formatted_key = f'{k}'
-
         if not config[k]:
             # request all the missing keys
+            input_msg: str = f'Enter {config["username"]} last.fm {k}: '
             if k == 'secret' or k == 'password':
-                config[k] = getpass(f'Enter {config["username"]} last.fm {formatted_key}: ')
+                config[k] = getpass(input_msg)
             else:
-                config[k] = input(f'Enter {config["username"]} last.fm {formatted_key}: ')
+                config[k] = input(input_msg)
 
-    if type(config['artists_search_limit']) != int:
-        logging.error('artists_search_limit value must be a valid number')
-        exit(1)
-
-    if config['artists_search_limit'] < 1 or config['artists_search_limit'] > 1000:
-        logging.error('artists_search_limit value must be a valid number between 1 and 1000')
-        exit(1)
-
-    if type(config['play_count']) != int:
-        logging.error('play_count value must be a valid number')
-        exit(1)
+    # validate key values
+    validate(k='artists_search_limit', v=config['artists_search_limit'], higher=1000)
+    validate(k='play_count', v=config['play_count'], higher=100)
 
     network: Optional[pylast.LastFMNetwork] = None
 
@@ -57,10 +74,10 @@ def main():
             password_hash=pylast.md5(config['password']),
         )
     except pylast.WSError:
-        logging.error('username/password incorrect. Check your config file and try again.')
+        logger.error('username/password incorrect. Check your config file and try again.')
 
-    logging.warning('play count:%s', config['play_count'])
-    logging.info('searching for items:')
+    logger.warning('play count:%s', config['play_count'])
+    logger.info('searching for items:')
 
     try:
         library: pylast.Library = pylast.Library(user=config['username'], network=network)
@@ -70,28 +87,28 @@ def main():
         idx: int = 0
         print(' ')
 
+        ext: PyLastExt = PyLastExt(user=config['username'], network=network)
+
         for library_item in library_items:
             artist: pylast.Artist = library_item.item
             if library_item.playcount == config['play_count']:
                 idx += 1
-                logging.info('%s %s', artist.name, library_item.playcount)
+                simple_logger.warning('%s %s', artist.name, library_item.playcount)
 
-                ext: PyLastExt = PyLastExt(user=config['username'], network=network, artist=artist)
-                ext.remove_artist()
+                ext.remove_artist(artist=artist)
 
         if idx == 0:
             message = f"no artists found with play_count = {config['play_count']}."
-            logging.info(message)
         else:
             message = f'{idx} artists found from your last.fm user library.'
-            logging.info(message)
+        logger.info(message)
 
         total_time = time.time() - start
         message = f'Execution end time: {time.strftime("%m/%d/%Y %H:%M:%S")}. ' \
                   f'Execution took: {total_time / 60:0.2f} min to complete.'
-        logging.info(message)
+        logger.info(message)
     except pylast.PyLastError:
-        logging.info('Something wrong happened. Check your config file and try again.')
+        logger.info('Something wrong happened. Check your config file and try again.')
 
 
 if __name__ == '__main__':

@@ -3,12 +3,12 @@ import pylast as pylast
 
 
 class PyLastExt(pylast.Library):
-    def __init__(self, user: str, network: pylast.LastFMNetwork, artist: pylast.Artist):
+    def __init__(self, user: str, network: pylast.LastFMNetwork):
         super().__init__(user=user, network=network)
-        self.artist = artist
         self.network = network
+        self.user = user
 
-    def remove_artist(self) -> None:
+    def remove_artist(self, artist: pylast.Artist) -> None:
         """Remove an artist from user's library."""
         """This api doesn't exists on ws.audioscrobbler.com, so this method could be improved in the future """
 
@@ -22,7 +22,7 @@ class PyLastExt(pylast.Library):
         # print(req.__str__())
         # print('-----')
 
-        url_safe: str = 'library/music/' + quote_plus(quote_plus(str(self.artist.name))).lower()
+        url_safe: str = 'library/music/' + quote_plus(quote_plus(str(artist.name))).lower()
 
         url1: str = f"https://www.last.fm/user/{self.user}/{url_safe}"
         url2: str = f"https://www.last.fm/user/{self.user}/{url_safe}/+delete"

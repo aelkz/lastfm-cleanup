@@ -57,6 +57,11 @@ The script will generate 2 urls for each occurrence found.
 Click on the URL ending with `/+delete` to perform the auto-removal through the tampermonkey stuff.
 voilá!
 
-## 4 Tips
+## 4 Final Thoughts
+
+Once you get all artists removed from your library, it is recommended to turn off the tampermonkey script on Chrome.
+If you accidentally navigate to the following pattern, the script will be activated, and you can lose unwanted data.
+
+## 5 Tips
 
 You can customize the play count requirements. It is possible to increase it from `1` to `5` for example.
