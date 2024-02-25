@@ -1,12 +1,13 @@
 # Last.fm remove scrobbles from user library where play_count = 1
-For now this script creates a URL for removal of every existing artist in your last.fm with 1 play_count for cleanup purposes.
+For now, this script creates a URL for removal of every existing artist in your last.fm with a low `play_count` for cleanup purposes.<br>
+The `play_count` should be any number starting from `1`.
 
 ## 1 Installation (chrome configuration)
 
 ### 1-1 install tampermonkey on chrome
 https://chromewebstore.google.com/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo?hl=en
 
-### 1-2 create user script w/ the following:
+### 1-2 create a new tampermonkey user script w/ the following:
 ```shell
 (function() {
     var aa = document.querySelectorAll("input[type=checkbox]");
@@ -14,7 +15,7 @@ https://chromewebstore.google.com/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmp
         aa[i].checked = true;
     }
     setTimeout(() => {
-        document.forms[3].submit();
+        document.forms[3].submit(); // this is the form that contains de delete button
     }, "1000");
 })();
 ```
@@ -23,7 +24,11 @@ PS. must change the `@match` tag URL to:
 
 `@match        https://www.last.fm/user/<YOUR_LASTFM_USER>/library/music/**/+delete`
 
-### 1-3 open last.fm on chrome and log-in with your user account
+So, the idea here is when you click on any url in the above pattern, the browser will activate the tampermonkey script clicking the checkbox confirmation input and also smashing the submit button doing the artist removal automatically.
+
+### 1-3 open `last.fm` website on chrome and log-in with your user account
+
+There's no need to do anything else. You should have an existing user session on the browser.
 
 ## 2 Installation (python)
 
@@ -49,9 +54,9 @@ python3 cleanup.py
 ```
 
 The script will generate 2 urls for each occurrence found.
-Click on the URL ending with `/+delete` to perform the auto-removal.
+Click on the URL ending with `/+delete` to perform the auto-removal through the tampermonkey stuff.
 voilá!
 
 ## 4 Tips
 
-You can customize the play count requirements. It is possible to increase from `1` to `5` for example.
+You can customize the play count requirements. It is possible to increase it from `1` to `5` for example.

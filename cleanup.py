@@ -11,8 +11,8 @@ def main():
     logging.basicConfig(level=logging.INFO)
 
     # load configs
-    lastfm_config = APP_CONFIG['lastfm']  # lastfm
-    config = lastfm_config['config']['api']  # config > api
+    lastfm_config = APP_CONFIG['lastfm']
+    config = lastfm_config['config']['api']
 
     config_keys = list(config.keys())
     keys: list = ['key', 'secret', 'username', 'password']
@@ -33,7 +33,7 @@ def main():
             if k == 'secret' or k == 'password':
                 config[k] = getpass(f'Enter {config["username"]} last.fm {formatted_key}: ')
             else:
-                config[k] = input(f'Enter {formatted_key}: ')
+                config[k] = input(f'Enter {config["username"]} last.fm {formatted_key}: ')
 
     if type(config['artists_search_limit']) != int:
         logging.error('artists_search_limit value must be a valid number')
@@ -44,10 +44,11 @@ def main():
         exit(1)
 
     if type(config['play_count']) != int:
-        print('play_count value must be a valid number')
+        logging.error('play_count value must be a valid number')
         exit(1)
 
     network: Optional[pylast.LastFMNetwork] = None
+
     try:
         network = pylast.LastFMNetwork(
             api_key=config['key'],
@@ -58,12 +59,12 @@ def main():
     except pylast.WSError:
         logging.error('username/password incorrect. Check your config file and try again.')
 
-    logging.info('play count:%s', config['play_count'])
+    logging.warning('play count:%s', config['play_count'])
     logging.info('searching for items:')
 
     try:
-        library: pylast.Library = pylast.Library(user=config['username'], network=network)  # <class 'pylast.Library'>
-        library_items: list[pylast.LibraryItem] = library.get_artists(limit=config['artists_search_limit'])  # <class 'list'>
+        library: pylast.Library = pylast.Library(user=config['username'], network=network)
+        library_items: list[pylast.LibraryItem] = library.get_artists(limit=config['artists_search_limit'])
 
         start = time.time()
         idx: int = 0

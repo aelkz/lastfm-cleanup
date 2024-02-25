@@ -10,10 +10,10 @@ class PyLastExt(pylast.Library):
 
     def remove_artist(self) -> None:
         """Remove an artist from user's library."""
-        """This api doesn't exists on ws.audioscrobbler.com, so this method cold be improved in the future """
+        """This api doesn't exists on ws.audioscrobbler.com, so this method could be improved in the future """
 
-        # params = self._get_params()
         # print('-----')
+        # params = self._get_params()
         # req: pylast._Request = pylast._Request(self.network, self.ws_prefix + ".removeTag", params)
         # print(self.ws_prefix)
         # print(params)
